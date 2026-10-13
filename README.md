@@ -1,213 +1,187 @@
-# DarkStream: real-time speech anonymization with low latency
+# DarkStream: Real-Time Speech Anonymization with Low Latency (ASRU 2025)
 
-### Waris Quamer, Ricardo Gutierrez-Osuna
+[Waris Quamer](https://github.com/warisqr007) and [Ricardo Gutierrez-Osuna](https://scholar.google.com/citations?user=UnuQfEwAAAAJ&hl=en)
 
 
-**Abstract :**
-We propose DarkStream, a streaming speech synthesis model for real-time speaker anonymization. 
-To improve content encoding under strict latency constraints, DarkStream combines a causal waveform 
-encoder, a short lookahead buffer, and transformer-based contextual layers. To further reduce 
-inference time, the model generates waveforms directly via a neural vocoder, thus removing 
-intermediate mel-spectrogram conversions. Finally, DarkStream anonymizes speaker identity by 
-injecting a GAN-generated pseudo-speaker embedding into linguistic features from the content encoder. 
-Evaluations show our model achieves strong anonymization, yielding close to 50% speaker verification 
-EER (near-chance performance) on the lazy-informed attack scenario, while maintaining acceptable 
-linguistic intelligibility (WER within 9%). By balancing low-latency, robust privacy, and minimal 
-intelligibility degradation, DarkStream provides a practical solution for privacy-preserving 
+<a href="https://arxiv.org/abs/2509.04667">
+  <img src="https://img.shields.io/badge/arXiv-2509.04667-%23B31B1B">
+</a>
+<!-- <a href="">
+  <img src="https://img.shields.io/badge/🤗%20Hugging%20Face-Models-FFD21E">
+</a> -->
+<a href="https://warisqr007.github.io/demos/darkstream/">
+  <img src="https://img.shields.io/badge/Demo%20Page-online-brightgreen">
+</a>
+<br>
+
+## Abstract
+
+We propose DarkStream, a streaming speech synthesis model for real-time speaker anonymization.
+To improve content encoding under strict latency constraints, DarkStream combines a causal waveform
+encoder, a short lookahead buffer, and transformer-based contextual layers. To further reduce
+inference time, the model generates waveforms directly via a neural vocoder, thus removing
+intermediate mel-spectrogram conversions. Finally, DarkStream anonymizes speaker identity by
+injecting a GAN-generated pseudo-speaker embedding into linguistic features from the content encoder.
+Evaluations show our model achieves strong anonymization, yielding close to 50% speaker verification
+EER (near-chance performance) on the lazy-informed attack scenario, while maintaining acceptable
+linguistic intelligibility (WER within 9%). By balancing low-latency, robust privacy, and minimal
+intelligibility degradation, DarkStream provides a practical solution for privacy-preserving
 real-time speech communication.
 
-Visit our [demo website](https://warisqr007.github.io/demos/darkstream/) for audio samples.
+## Contents
 
+- [Installation](#installation)
+- [Data Preparation](#data-preparation)
+- [Pretrained Checkpoints](#pretrained-checkpoints)
+- [Inference](#inference)
+- [Training](#training)
+- [SLT24 Model](#slt24-model)
 
-## Checkpoints
-
-| Model type    |  Lookahead  |  Link  |
-|---------------|-------------|--------|
-| Wav           |  0 ms       | [GDrive](https://drive.google.com/file/d/1YeGO6_NhyGbw-zFiYe04jJDu8UFEJq1e/view?usp=sharing) |
-| Wav + CL      |  0 ms       | [GDrive](https://drive.google.com/file/d/1JhtroQHxV-1qTzETtxidXE4sg5KznplQ/view?usp=sharing) |
-| Wav           |  140 ms     | [GDrive](https://drive.google.com/file/d/1k3WrFjINpW8ggR6v0aDx8geCWrQYmmoh/view?usp=sharing) |
-| Wav + CL      |  140 ms     | [GDrive](https://drive.google.com/file/d/1pohNzyyvuNaJu4Nq44SWG5iEpxJODSsF/view?usp=sharing) |
-| Wav + CL + KM |  140 ms     | [GDrive](https://drive.google.com/file/d/1pfdCHRAacD3ppdmx3B8IsMmloh6p02Xm/view?usp=sharing) |
-| Wav + CL + ResidualKM with 2 Levels | 140 ms  | [GDrive](https://drive.google.com/file/d/17ki6NGtJLxmSbJzAmGZlVH8AyirAwdvw/view?usp=sharing) |
-| Wav + CL + ResidualKM with 4 Levels | 140 ms  | [GDrive](https://drive.google.com/file/d/12ij4ybFNmo8WLEBMoRzC9j88YIm5PGNh/view?usp=sharing) |
-| Wav + CL + ResidualKM with 8 Levels | 140 ms  | [GDrive](https://drive.google.com/file/d/1kJCgcYM06Xlxkj8Y_akSEpwKu7J7VVFe/view?usp=sharing) |
-| Wav + CL (w/ logits) | 140 ms  | [GDrive](https://drive.google.com/file/d/1pyByzdhqmoWmMKNuqS8N841KhueJw0-6/view?usp=sharing) |
-| Wav           |  280 ms     | [GDrive](https://drive.google.com/file/d/10kBxii3ragO_a4nvt6syCvVI-tKESJfd/view?usp=sharing) |
-| Wav  + CL     |  280 ms     | [GDrive](https://drive.google.com/file/d/1-hj2MwraXHFoouK2l2YfmRibFl6krZmf/view?usp=sharing) |
-
-
-## Usage
-
-### Installation
+## Installation
 
 ```bash
-# Clone project
-git clone https://github.com/PSI-TAMU/DarkStream.git 
+git clone https://github.com/PSI-TAMU/DarkStream.git
 cd DarkStream
 
-# [Optional] Create a conda virtual environment
-conda create -n <env_name> python=3.10
-conda activate <env_name>
+conda create -n darkstream python=3.10
+conda activate darkstream
 
-# [Optional] Use mamba instead of conda to speed up
-conda install mamba -n base -c conda-forge
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Data Preprocessing
-We follow the same data-processing stage as [here](https://github.com/PSI-TAMU/streamVC). Please follow directions in the specified repo.
+## Data Preparation
 
+DarkStream uses the same data pipeline as [StreamVC](https://github.com/PSI-TAMU/streamVC). Follow the preprocessing instructions in that repository.
 
-### Run
+## Pretrained Checkpoints
 
-**Fit**
+### Model naming
 
-```bash
-python src/main.py fit -c configs/data/pasr.yaml -c configs/model/mimipasr_la7.yaml --trainer.logger.name debug
-```
+| Term | Meaning |
+|------|---------|
+| **Wav** | Causal waveform encoder: the content encoder takes raw audio directly, with no mel-spectrogram front end. |
+| **CL** | Contextual layers: a causal transformer stacked on top of the waveform encoder. |
+| **KM** | Content features are quantized with a k-means model (256 clusters) before decoding. |
+| **ResidualKM (N levels)** | Residual k-means quantization with N stages, each quantizing the residual of the previous stage. |
+| **w/ logits** | The decoder receives the content encoder's output logits (through a linear projector) instead of its hidden features. |
+| **Lookahead** | Future context available to the encoder. With 20 ms frames, 0 / 140 / 280 ms correspond to 0 / 7 / 14 frames (`nola` / `la7` / `la14` in file and config names). |
 
-**Resume**
+In all variants, the content encoder is first pretrained to predict HuBERT k-means units (200 clusters) and is then frozen while the decoder is trained for resynthesis.
 
-```bash
-python src/main.py fit -c configs/data/pasr.yaml -c configs/model/mimipasr_la7.yaml --ckpt_path <ckpt_path> --trainer.logger.id exp1_id
-```
+### DarkStream (Wav + CL)
 
-The model is trained in 4 steps:
-1. Training the content encoder. For this use [pasr.yaml](configs/data/pasr.yaml) for data config and [mimi_pasr_la7.yaml](configs/model/mimipasr_la7.yaml) for model configs. `la7` corresponds to lookahead size of 140ms (i.e., 7 * 20ms frames). Change `model.init_args.seanet_args.look_ahead_size` accordingly to adjust lookahead size.
+A HiFi-GAN-style causal convolutional encoder and decoder (implemented with SEANet blocks from Mimi), with a causal transformer as the contextual layer.
 
-2. Training resynthesis module. For this use [resynthesis.yaml](configs/data/resynthesis.yaml) for data config and [mimiresynthesis_la7.yaml](configs/model/mimiresynthesis_la7.yaml) for model configs. Set `model.init_args.encoder_path` to the trained checkpoint from step 1.
+#### Paper models
 
-3. Training k-mean model. Start by using [dump_content_features.py](preprocess/dump_content_features.py) file to generate content embeddings. Modifying the file according if using a different model/ckpt. Once the features are generated, use [learn_kmeans.py](src/components/quantizer/learn_kmeans.py) to train a k-means model.
+The configurations evaluated in the DarkStream paper. ⭐ marks the main DarkStream model (140 ms lookahead with k-means quantization), which gives the anonymization results reported in the abstract (≈47% lazy-informed EER, ≈9.5% WER).
 
-4. Optionally finetune the resynthesis model with quantized content embeddings. To do so, use [resynthesis.yaml](configs/data/resynthesis.yaml) for data config and [mimikmresynthesis_la7.yaml](configs/model/mimikmresynthesis_la7.yaml) for model configs. Set `model.init_args.encoder_path` to original content encoder checkpoint, `model.init_args.kmeans_path` to the learned kmeans model. Additionally set `model.init_args.decoder_pretrained: true` and `model.init_args.decoder_path` to checkpoint from step 2.
+| Model | Lookahead | Module | Download |
+|-------|-----------|--------|----------|
+| Wav + CL | 0 ms   | `MimiResynthesisModule` | [Google Drive](https://drive.google.com/file/d/1JhtroQHxV-1qTzETtxidXE4sg5KznplQ/view?usp=sharing) |
+| Wav + CL | 140 ms | `MimiResynthesisModule` | [Google Drive](https://drive.google.com/file/d/1pohNzyyvuNaJu4Nq44SWG5iEpxJODSsF/view?usp=sharing) |
+| Wav + CL | 280 ms | `MimiResynthesisModule` | [Google Drive](https://drive.google.com/file/d/1-hj2MwraXHFoouK2l2YfmRibFl6krZmf/view?usp=sharing) |
+| ⭐ **Wav + CL + KM (DarkStream)** | **140 ms** | `MimiKMResynthesisModule` | [Google Drive](https://drive.google.com/file/d/1pfdCHRAacD3ppdmx3B8IsMmloh6p02Xm/view?usp=sharing) |
 
+#### Additional variants (not in the paper)
 
-### Inference
+Extensions released with this repository that were not evaluated in the paper.
 
-1. See [inference_slt24.ipynb](notebooks/inference_slt24.ipynb) for SLT24 archiecture.
+| Model | Lookahead | Module | Download |
+|-------|-----------|--------|----------|
+| Wav + CL + ResidualKM (2 levels) | 140 ms | `MimiResidualKMResynthesisModule` | [Google Drive](https://drive.google.com/file/d/17ki6NGtJLxmSbJzAmGZlVH8AyirAwdvw/view?usp=sharing) |
+| Wav + CL + ResidualKM (4 levels) | 140 ms | `MimiResidualKMResynthesisModule` | [Google Drive](https://drive.google.com/file/d/12ij4ybFNmo8WLEBMoRzC9j88YIm5PGNh/view?usp=sharing) |
+| Wav + CL + ResidualKM (8 levels) | 140 ms | `MimiResidualKMResynthesisModule` | [Google Drive](https://drive.google.com/file/d/1kJCgcYM06Xlxkj8Y_akSEpwKu7J7VVFe/view?usp=sharing) |
+| Wav + CL (w/ logits) | 140 ms | `MimiResynthesisWithLogitsModule` | [Google Drive](https://drive.google.com/file/d/1pyByzdhqmoWmMKNuqS8N841KhueJw0-6/view?usp=sharing) |
 
-2. See [inference_darkstream.ipynb](notebooks/inference_darkstream.ipynb) for new DarkStream archiecture.
+Place downloaded checkpoints in [`ckpts/`](ckpts). The k-means models used by the KM variants (`km256_model.bin`, `km256_centers.pth`) are already included there.
 
+More pretrained checkpoints, including the stage-1 content encoders (e.g. `mimipasr_nola.ckpt`) used as `encoder_path` when training the resynthesis models, are available in this [Google Drive folder](https://drive.google.com/drive/folders/1pd8eD5kuMcou8_P1L9NS2ZoOet8ScGZy).
 
+## Inference
 
-### Project Architecture
+See [`notebooks/inference_darkstream.ipynb`](notebooks/inference_darkstream.ipynb) for non-streaming synthesis, frame-by-frame streaming synthesis, and anonymization with a GAN-generated pseudo-speaker embedding. Select the variant with `model_type`:
 
-```mermaid
-    graph TD;
-        A[LightningCLI]---B[LightningModule]
-        A---C[LightningDataModule]
-        B---D[models]
-        B---E[metrics]
-        B---F[...]
-        C---G[dataloaders]
-        G---H[datasets]
-```
+| `model_type` | Model |
+|--------------|-------|
+| `darkstream_without_kmeans` | Wav + CL |
+| `darkstream` | Wav + CL + KM |
+| `darkstream_with_residualkmeans` | Wav + CL + ResidualKM |
+| `darkstream_with_logits` | Wav + CL (w/ logits) |
 
-### File Structure
+Sample utterances for testing are provided in [`sample_wav/`](sample_wav).
 
-```text
-├── configs                  # Configuration files
-│   ├── data                 # Dataset configuration
-│   │   └── mnist.yaml       # Example configuration for MNIST dataset
-│   ├── model                # Model configuration
-│   │   └── simplenet.yaml   # Example configuration for SimpleNet model
-│   └── default.yaml         # Default configuration
-├── data                     # Dataset directory
-├── logs                     # Log directory
-├── notebooks                # Jupyter Notebook directory
-├── scripts                  # Script directory
-│   └── clear_wandb_cache.py # Example script to clear wandb cache
-├── src                      # Source code directory
-│   ├── callbacks            # Callbacks directory
-│   │   └── __init__.py
-│   ├── data_modules         # Data module directory
-│   │   ├── __init__.py
-│   │   └── mnist.py         # Example data module for MNIST dataset
-│   ├── metrics              # Metrics directory
-│   │   └── __init__.py
-│   ├── models               # Model directory
-│   │   ├── __init__.py
-│   │   └── simplenet.py     # Example SimpleNet model
-│   ├── modules              # Module directory
-│   │   ├── __init__.py
-│   │   └── mnist_module.py  # Example MNIST module
-│   ├── utils                # Utility directory
-│   │   ├── __init__.py
-│   │   └── cli.py           # CLI tool
-│   ├── __init__.py
-│   └── main.py              # Main program entry point
-├── .env.example             # Example environment variable file
-├── .gitignore               # Ignore files for git
-├── .project-root            # Project root indicator file for pyrootutils
-├── LICENSE                  # Open source license
-├── pyproject.toml           # Configuration file for Black and Ruff
-├── README.md                # Project documentation
-├── README_PROJECT.md        # Project documentation template
-├── README_ZH.md             # Project documentation in Chinese
-└── requirements.txt         # Dependency list
-```
+## Training
 
-### Configuration
-
-1. Define dataset by inheriting `pl.LightningDataModule` in `src/data_module`.
-2. Define dataset configuration file in `configs/data` as parameters for the custom `pl.LightningDataModule`.
-3. Define the model by inheriting `nn.Module` in `src/models`.
-4. Define metrics by inheriting `torchmetrics.Metric` in `src/metrics`.
-5. Define training module by inheriting `pl.LightningModule` in `src/modules`.
-6. Define the configuration file for the training module in `configs/model` as parameters for the custom `pl.LightningModule`.
-7. Configure `pl.trainer`, logs and other parameters in `configs/default.yaml`.
-
-## Tips
-
-### `print_config`
-
-Using the `print_config` functionality of `jsonargparse`, you can obtain the parsed arguments and generate default `yaml` files. However, it is necessary to first configure the `yaml` files for `data` and `model`.
+Training uses [PyTorch Lightning CLI](https://lightning.ai/docs/pytorch/stable/cli/lightning_cli.html); each run combines a data config and a model config:
 
 ```bash
-python src/main.py fit -c configs/data/mnist.yaml -c configs/model/simplenet.yaml --print_config
+python src/main.py fit -c configs/data/<data>.yaml -c configs/model/<model>.yaml --trainer.logger.name <run_name>
+
+# Resume from a checkpoint
+python src/main.py fit -c configs/data/<data>.yaml -c configs/model/<model>.yaml --ckpt_path <ckpt_path> --trainer.logger.id <run_id>
 ```
 
-[Prepare a config file for the CLI](https://lightning.ai/docs/pytorch/stable/cli/lightning_cli_advanced.html#prepare-a-config-file-for-the-cli)
+DarkStream is trained in four stages. The commands below use the 140 ms (`la7`) configs.
 
-### Customized `LightningCLI`
+**1. Content encoder.** Train the encoder to predict HuBERT units.
 
-This template implements a custom `CLI` (`CustomLightningCLI`) to achieve the following functions,
-
-- When starting the program, the configuration file is automatically saved to the corresponding log directory, for `WandbLogger` only.
-- When starting the program, save configurations for optimizer and scheduler to loggers.
-- When starting the program, the default configuration file is automatically loaded.
-- After the test is completed, the `checkpoint_path` used for testing is printed.
-- Add some command line parameters:
-    - `--ignore_warnings` (default: `False`): Ignore all warnings.
-    - `--test_after_fit` (default: `False`): Automatically test after each training.
-    - `--git_commit_before_fit` (default: `False`): `git commit` before each training, the commit message is `{logger.name}_{logger.version}`, for `WandbLogger` only.
-
-[CONFIGURE HYPERPARAMETERS FROM THE CLI (EXPERT)](https://lightning.ai/docs/pytorch/stable/cli/lightning_cli_expert.html)
-
-### Limit `numpy` number of threads
-
-When running on a server, especially when the CPU has a lot of cores (>=24), you may encounter the problem of too many `numpy` processes, which may cause the experiment to inexplicably hang. You can limit the number of `numpy` processes by setting environment variables (in the `.env` file).
-
-```text
-OMP_NUM_THREADS=8
-MKL_NUM_THREADS=8
-GOTO_NUM_THREADS=8
-NUMEXPR_NUM_THREADS=8
-OPENBLAS_NUM_THREADS=8
-MKL_DOMAIN_NUM_THREADS=8
-VECLIB_MAXIMUM_THREADS=8
+```bash
+python src/main.py fit -c configs/data/pasr.yaml -c configs/model/mimipasr_la7.yaml
 ```
 
-> `.env` file is automatically loaded to environment by [`pyrootutils`](https://github.com/ashleve/pyrootutils) via [`python-dotenv`](https://github.com/theskumar/python-dotenv).
+To change the lookahead, set `model.init_args.seanet_args.look_ahead_size` (in 20 ms frames).
 
-[Stack Overflow: Limit number of threads in numpy](https://stackoverflow.com/questions/30791550/limit-number-of-threads-in-numpy)
+**2. Resynthesis model.** Set `model.init_args.encoder_path` in the model config to the checkpoint from stage 1 (or a pretrained content encoder from the [Google Drive folder](https://drive.google.com/drive/folders/1pd8eD5kuMcou8_P1L9NS2ZoOet8ScGZy)).
 
-### Clear `wandb` cache
+```bash
+python src/main.py fit -c configs/data/resynthesis.yaml -c configs/model/mimiresynthesis_la7.yaml
+```
 
-When you delete an experiment from the `wandb` web page, the cache of the experiment still exists in the local `wandb` directory, you can use the `scripts/clear_wandb_cache.py` script to clear the cache.
+Use `mimiresynthesis_nola.yaml` or `mimiresynthesis_la14.yaml` for the 0 ms and 280 ms variants, and `mimiresynthesiswithlogits_la7.yaml` for the logits variant.
 
-[Wandb Python Documentation](https://docs.wandb.ai/ref/python/)
+**3. K-means model.** Extract content features with [`preprocess/dump_content_features.py`](preprocess/dump_content_features.py) (edit the checkpoint path inside to match your model), then train k-means with [`src/components/quantizer/learn_kmeans.py`](src/components/quantizer/learn_kmeans.py).
 
+**4. (Optional) Fine-tune with quantized features.** In the model config set:
 
+- `model.init_args.encoder_path`: content encoder checkpoint from stage 1
+- `model.init_args.kmeans_path`: k-means model from stage 3
+- `model.init_args.decoder_pretrained: true`
+- `model.init_args.decoder_path`: resynthesis checkpoint from stage 2
+
+```bash
+python src/main.py fit -c configs/data/resynthesis.yaml -c configs/model/mimikmresynthesis_la7.yaml
+```
+
+For codebase layout, configuration conventions, and environment tips, see [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
+
+## SLT24 Model
+
+This repository also provides checkpoints for our earlier SLT 2024 architecture, referred to as **Wav** in the comparisons above. It uses a HiFi-GAN-style causal encoder and decoder without contextual layers, and is loaded with `ResynthesisModule`.
+
+| Model | Lookahead | Download |
+|-------|-----------|----------|
+| Wav | 0 ms   | [Google Drive](https://drive.google.com/file/d/1YeGO6_NhyGbw-zFiYe04jJDu8UFEJq1e/view?usp=sharing) |
+| Wav | 140 ms | [Google Drive](https://drive.google.com/file/d/1k3WrFjINpW8ggR6v0aDx8geCWrQYmmoh/view?usp=sharing) |
+| Wav | 280 ms | [Google Drive](https://drive.google.com/file/d/10kBxii3ragO_a4nvt6syCvVI-tKESJfd/view?usp=sharing) |
+
+See [`notebooks/inference_slt24.ipynb`](notebooks/inference_slt24.ipynb) for usage. For more details on this model, see the [StreamVC repository](https://github.com/PSI-TAMU/streamVC).
+
+## Citation
+```
+@INPROCEEDINGS{quamer2025darkstreamrealtimespeechanonymization,
+  author={Quamer, Waris and Gutierrez-Osuna, Ricardo},
+  booktitle={2025 IEEE Automatic Speech Recognition and Understanding Workshop (ASRU)}, 
+  title={DarkStream: real-time speech anonymization with low latency}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1-7},
+  keywords={Data privacy;Privacy;Vocoders;Linguistics;Transformers;Real-time systems;Information filtering;Speech synthesis;Low latency communication;Information integrity;speech synthesis;speaker anonymization;voice conversion},
+  doi={10.1109/ASRU65441.2025.11434609}
+}
+```
+
+## License
+
+This project is released under the [CC0 1.0 Universal](LICENSE) license.
