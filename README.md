@@ -46,6 +46,7 @@ cd DarkStream
 conda create -n darkstream python=3.10
 conda activate darkstream
 
+conda install -c conda-forge git-lfs -y
 pip install -r requirements.txt
 ```
 
